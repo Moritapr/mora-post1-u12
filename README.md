@@ -295,3 +295,100 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 | `e60caf1` test | Pruebas del servicio y de integración del flujo completo |
 | `898eedb` refactor | Selector valida al arrancar que toda categoría tenga calculadora |
 | `a03ac7b` docs | Decisiones 1 y 2, desviaciones, pruebas y evidencia |
+
+---
+
+## Parte 2 - Decisión arquitectónica y análisis de impacto
+
+La decisión arquitectónica está en [`docs/adr/ADR-001.md`](docs/adr/ADR-001.md).
+
+### Reglas de arquitectura (ArchUnit 1.2.1)
+
+`src/test/java/com/empresa/reembolsos/ReglasArquitectura.java`, con
+`@AnalyzeClasses(packages = "com.empresa.reembolsos", importOptions = ImportOption.DoNotIncludeTests.class)`.
+
+| Regla | Qué verifica |
+|---|---|
+| `procesamientoSinPersistenciaNiWeb` | `procesamiento` no depende de `infraestructura`, `adaptadores`, `org.springframework.data`, `jakarta.persistence`, `org.springframework.web` ni `org.springframework.http` |
+| `controladorSoloUsaServicio` | `adaptadores.rest` solo accede a sí mismo, a `aplicacion`, `dominio`, `org.springframework.web`, `org.springframework.http` y `java` |
+| `calculadorasImplementanInterfaz` | Las clases `Calculadora*` de `procesamiento.calculo` implementan `CalculadoraReembolso` |
+| `notificadoresImplementanInterfaz` | Las clases de `procesamiento.notificacion` implementan `ObservadorCambioEstado` |
+
+**Hallazgos al ejecutar las reglas tal como vienen en el enunciado** (`mvn test -Dtest=ReglasArquitectura`):
+
+```
+[ERROR] Tests run: 4, Failures: 2, Errors: 0, Skipped: 0
+```
+
+1. **Regla 3: `SelectorCalculadora` no es una calculadora.** Vive en `procesamiento.calculo` (junto a las
+   estrategias que elige) y no implementa `CalculadoraReembolso`, ni debe hacerlo:
+
+   ```
+   Architecture Violation [Priority: MEDIUM] - Rule 'classes that reside in a package '..procesamiento.calculo..' and are not interfaces should implement com.empresa.reembolsos.procesamiento.calculo.CalculadoraReembolso' was violated (1 times):
+   Class <com.empresa.reembolsos.procesamiento.calculo.SelectorCalculadora> does not implement com.empresa.reembolsos.procesamiento.calculo.CalculadoraReembolso in (SelectorCalculadora.java:0)
+   ```
+
+   Solución: acotar la regla con `.and().haveSimpleNameStartingWith("Calculadora")`, sin mover ni
+   ocultar el selector. La convención de nombres ya era la del proyecto (`CalculadoraViaje`,
+   `CalculadoraRepresentacion`, `CalculadoraCapacitacion`), y una `CalculadoraBienestar` que olvide
+   implementar la interfaz seguiría siendo detectada.
+2. **Regla 2: falla sin ninguna dependencia prohibida.** Las 6 violaciones son accesos de cada clase a sí
+   misma, porque la lista permitida no incluye el propio paquete `adaptadores.rest`. Fallaría incluso con
+   el controlador literal del enunciado, que asigna y lee su campo `servicio`:
+
+   ```
+   Architecture Violation [Priority: MEDIUM] - Rule 'classes that reside in a package '..adaptadores.rest..' should only access classes that reside in any package ['..aplicacion..', '..dominio..', 'org.springframework.web..', 'org.springframework.http..', 'java..']' was violated (6 times):
+   Constructor <com.empresa.reembolsos.adaptadores.rest.SolicitudReembolsoController.<init>(com.empresa.reembolsos.aplicacion.SolicitudReembolsoService)> sets field <com.empresa.reembolsos.adaptadores.rest.SolicitudReembolsoController.servicio> in (SolicitudReembolsoController.java:23)
+   Method <com.empresa.reembolsos.adaptadores.rest.ManejadorErroresRest.cuerpoIlegible(org.springframework.http.converter.HttpMessageNotReadableException)> calls method <com.empresa.reembolsos.adaptadores.rest.ManejadorErroresRest.problema(org.springframework.http.HttpStatus, java.lang.String, java.lang.String)> in (ManejadorErroresRest.java:30)
+   Method <com.empresa.reembolsos.adaptadores.rest.ManejadorErroresRest.solicitudInvalida(com.empresa.reembolsos.aplicacion.SolicitudInvalidaException)> calls method <com.empresa.reembolsos.adaptadores.rest.ManejadorErroresRest.problema(org.springframework.http.HttpStatus, java.lang.String, java.lang.String)> in (ManejadorErroresRest.java:20)
+   Method <com.empresa.reembolsos.adaptadores.rest.ManejadorErroresRest.solicitudNoEncontrada(com.empresa.reembolsos.aplicacion.SolicitudNoEncontradaException)> calls method <com.empresa.reembolsos.adaptadores.rest.ManejadorErroresRest.problema(org.springframework.http.HttpStatus, java.lang.String, java.lang.String)> in (ManejadorErroresRest.java:25)
+   Method <com.empresa.reembolsos.adaptadores.rest.SolicitudReembolsoController.cambiarEstado(java.lang.Long, com.empresa.reembolsos.dominio.EstadoSolicitud)> gets field <com.empresa.reembolsos.adaptadores.rest.SolicitudReembolsoController.servicio> in (SolicitudReembolsoController.java:33)
+   Method <com.empresa.reembolsos.adaptadores.rest.SolicitudReembolsoController.crear(com.empresa.reembolsos.dominio.SolicitudReembolso)> gets field <com.empresa.reembolsos.adaptadores.rest.SolicitudReembolsoController.servicio> in (SolicitudReembolsoController.java:28)
+   ```
+
+   Solución: agregar `"..adaptadores.rest.."` a la lista permitida. Con eso, la regla sigue prohibiendo
+   todo lo externo (infraestructura, procesamiento, Spring Data).
+3. **`DoNotIncludeTests` es necesario y el prefijo no lo sustituye.** Las pruebas unitarias viven en los
+   mismos paquetes que el código. Quitando la opción, las Reglas 3 y 4 fallan por
+   `CalculadoraViajeTest`, `CalculadoraRepresentacionTest`, `CalculadoraCapacitacionTest` (que además
+   empiezan por "Calculadora") y `NotificadoresTest`.
+4. **Regla 1 endurecida.** Su nombre dice "NiWeb", pero en el enunciado solo prohíbe `..adaptadores..`:
+   un `RestClient` dentro de `procesamiento` pasaría la regla. Se agregan `org.springframework.web..` y
+   `org.springframework.http..`, coherente con ADR-001 (el cliente de la API de Contabilidad vivirá en
+   `infraestructura`).
+
+Resultado final:
+
+```
+$ mvn test -Dtest=ReglasArquitectura
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0
+[INFO] BUILD SUCCESS
+```
+
+### Decisión de diseño 3 - Capas simples vs. Hexagonal
+
+Documentada en ADR-001.
+
+### Decisión de diseño 4 - Por qué la Regla 1 distingue los estereotipos de Spring del acceso a datos y web
+
+La Regla 1 prohíbe en `procesamiento` las dependencias de persistencia (`org.springframework.data`,
+`jakarta.persistence`, `infraestructura`) y de web (`adaptadores`, `org.springframework.web/http`),
+pero no todo `org.springframework`. El criterio es si la dependencia cambia **cómo se comporta o cómo se
+prueba** la lógica, o solo **cómo se registra**:
+
+- **Estereotipos (aceptables).** Los únicos imports de Spring en `procesamiento` son
+  `org.springframework.stereotype.Component` (11 clases) y `org.springframework.core.annotation.Order`
+  (3 observadores). Son metadatos de registro y orden: no cambian ninguna línea de lógica, y las 9 clases
+  de prueba unitaria de `procesamiento` instancian validadores, calculadoras y notificadores con `new`,
+  sin contexto de Spring. Prohibirlos obligaría a declarar los 11 beans a mano en una clase
+  `@Configuration`, y además a mano el orden de la cadena y de los observadores, que hoy está en
+  `CadenaValidadores` y en `@Order`. Sería más código y más puntos de cambio sin desacoplar nada.
+- **Acceso a datos y web (no aceptables).** Cambian el comportamiento y la forma de probar. Si
+  `ValidadorDuplicados` consultara `RepositorioSolicitudesJpa`, la cadena haría consultas por su cuenta,
+  sus pruebas necesitarían una base de datos y se perdería la decisión de que el servicio entregue las
+  pendientes ya cargadas. Un cliente HTTP en un notificador haría que una prueba unitaria dependiera de la
+  red.
+
+Prohibir todo `org.springframework` sería una regla más simple de escribir, pero castigaría lo inocuo
+(anotaciones) igual que lo dañino (dependencias de infraestructura). Una regla que obliga a escribir
+excepciones o código de configuración por algo inofensivo acaba desactivándose.
