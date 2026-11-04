@@ -35,6 +35,8 @@ varias implementaciones", pero la relación entre ellas es diferente en cada uno
 | RF2 (Strategy) | Exactamente una, según la categoría | No aplica: solo se ejecuta una | Sí: monto aprobado |
 | RF3 (Observer) | Todas, sin orden de negocio | No: todas deben enterarse | No: solo reaccionan |
 
+> *Nota posterior a la implementación (commit `d20af39`):* el orden sí terminó importando, no por una regla de negocio entre observadores, sino por la garantía de RF3 de que auditoría registre todo cambio "sin excepción". `forEach` se detiene en la primera excepción, así que se fijó Auditoría -> Empleado -> Contabilidad con `@Order` (ver la sección 3 y el ADR-001). El texto de arriba se conserva tal como se escribió antes del código.
+
 **Alternativas consideradas y por qué no:**
 
 - RF1 con Strategy (elegir *una* validación) no cumple el requisito: no se elige una, se exigen las tres.
