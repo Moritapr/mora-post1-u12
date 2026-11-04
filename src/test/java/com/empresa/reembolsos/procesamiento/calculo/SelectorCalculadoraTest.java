@@ -20,12 +20,20 @@ class SelectorCalculadoraTest {
     }
 
     @Test
-    void categoriaSinCalculadora_lanzaExcepcionConLaCategoria() {
-        var selector = new SelectorCalculadora(List.of(new CalculadoraViaje()));
+    void categoriaSinCalculadora_fallaAlConstruirNombrandoLasFaltantes() {
+        assertThatThrownBy(() -> new SelectorCalculadora(List.of(new CalculadoraViaje())))
+            .isInstanceOf(IllegalStateException.class)
+            .hasMessage("Categorias sin calculadora: [REPRESENTACION, CAPACITACION]");
+    }
 
-        assertThatThrownBy(() -> selector.obtener(CategoriaGasto.CAPACITACION))
+    @Test
+    void categoriaNula_lanzaExcepcion() {
+        var selector = new SelectorCalculadora(List.of(
+            new CalculadoraViaje(), new CalculadoraRepresentacion(), new CalculadoraCapacitacion()));
+
+        assertThatThrownBy(() -> selector.obtener(null))
             .isInstanceOf(IllegalArgumentException.class)
-            .hasMessage("Categoria no soportada: CAPACITACION");
+            .hasMessage("Categoria no soportada: null");
     }
 
     @Test
