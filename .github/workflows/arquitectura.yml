@@ -10,12 +10,13 @@ jobs:
   arquitectura:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      # cache: maven reemplaza al paso actions/cache@v3 del enunciado (version obsoleta):
+      # cache: maven reemplaza al paso actions/cache@v3 del enunciado (version obsoleta);
+      # checkout@v7 y setup-java@v6 porque las v4 del enunciado estan deprecadas (Node 20).
       # setup-java cachea ~/.m2/repository con una clave derivada de los pom.xml
       - name: Configurar Java 17
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v6
         with:
           java-version: 17
           distribution: temurin
