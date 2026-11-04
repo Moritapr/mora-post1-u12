@@ -399,3 +399,121 @@ prueba** la lógica, o solo **cómo se registra**:
 Prohibir todo `org.springframework` sería una regla más simple de escribir, pero castigaría lo inocuo
 (anotaciones) igual que lo dañino (dependencias de infraestructura). Una regla que obliga a escribir
 excepciones o código de configuración por algo inofensivo acaba desactivándose.
+
+### Qué se descartó y por qué
+
+Criterio de la Guía (sección 4.2): ¿la variabilidad que justificaría la alternativa es real y está
+documentada hoy, o es una especulación sobre el futuro? Ninguno de estos descartes es definitivo: cada uno
+es la decisión vigente hoy y lleva la señal que haría reconsiderarlo.
+
+#### Ejemplos de referencia del enunciado
+
+**1. `ApplicationEventPublisher` + `@EventListener` en lugar de inyectar `List<ObservadorCambioEstado>`.**
+- *Qué se consideró:* que `cambiarEstado` publicara un evento de dominio ("solicitud cambió de estado") y
+  que cada interesado lo escuchara con `@EventListener`, como en la Guía (sección 2.3).
+- *Por qué se descartó:* hay exactamente tres interesados, fijos y conocidos al compilar, y la interfaz
+  `ObservadorCambioEstado` ya desacopla el servicio de ellos. Hoy, buscar las implementaciones de la
+  interfaz muestra quién reacciona; con un bus genérico, habría que rastrear quién escucha un tipo de
+  evento. El bus tampoco resuelve el riesgo real que encontramos: los listeners síncronos también se
+  ejecutan en serie y propagan la excepción, así que el orden y el aislamiento de fallos seguirían
+  pendientes. No pasa el test de explicabilidad, porque no se puede decir en una oración qué desacopla
+  que la interfaz no desacople ya.
+- *Señal para reconsiderar:* que la integración con la API de Contabilidad requiera entrega **después
+  del commit** o **asíncrona** (`@TransactionalEventListener(phase = AFTER_COMMIT)`, `@Async`), o que
+  aparezcan interesados en otro módulo que no deban depender de `procesamiento.notificacion`. La primera
+  señal coincide con la de ADR-001.
+
+**2. Visitor o Abstract Factory para exportar el historial en varios formatos.**
+- *Qué se consideró:* anticipar que Contabilidad pediría exportar en PDF y Excel, y construir desde ya
+  una jerarquía de exportadores.
+- *Por qué se descartó:* en esta especificación **no hay ningún requisito de exportación**, ni siquiera
+  en CSV. Construir la abstracción sería resolver un problema inexistente (YAGNI), y la Rule of Three
+  ni siquiera tiene su primer caso.
+- *Señal para reconsiderar:* un primer formato pedido se implementa directamente; un segundo formato real
+  justifica extraer una interfaz `ExportadorHistorial`; con un tercero (Rule of Three) se evalúa si hace
+  falta algo más que Strategy.
+
+#### Elementos propios surgidos en esta implementación
+
+**3. Máquina de estados (patrón State) para las transiciones de `EstadoSolicitud`.**
+- *Qué se observó:* `cambiarEstado` acepta cualquier transición. Una prueba temporal contra el servicio
+  real, que no se versionó, lo mostró así (incluye el caso 5):
+
+  ```
+  SONDA monto -50000 -> estado PENDIENTE, aprobado -50000
+  SONDA monto 0 -> estado PENDIENTE, aprobado 0.0
+  Notificando a E-001: su solicitud paso de PENDIENTE a APROBADA
+  Contabilidad: programar pago de -50000.00 para E-001
+  Notificando a E-001: su solicitud paso de APROBADA a APROBADA
+  Contabilidad: programar pago de -50000.00 para E-001
+  Notificando a E-001: su solicitud paso de APROBADA a PENDIENTE
+  ```
+
+  `APROBADA -> APROBADA` programa el pago **dos veces**, y `APROBADA -> PENDIENTE` se permite.
+- *Qué se consideró:* una clase por estado con sus transiciones permitidas (State) o, más simple, una
+  tabla `EnumMap<EstadoSolicitud, Set<EstadoSolicitud>>`.
+- *Por qué se descartó:* la especificación enumera los estados que disparan notificaciones, pero **no
+  define qué transiciones son válidas** (¿se puede volver de REQUIERE_CORRECCION a PENDIENTE? ¿se puede
+  revocar una aprobación?). Implementar State sería inventar reglas de negocio que Finanzas no ha dado
+  (YAGNI). Además, los estados no tienen comportamiento propio, solo un nombre, que es justo lo que
+  justificaría State. No pasa el test de explicabilidad: no se puede explicar en una oración qué problema
+  resuelve sin inventar las reglas.
+- *Señal para reconsiderar:* (a) Finanzas define el flujo de estados; empezar con la tabla de
+  transiciones y llegar a State solo si los estados ganan comportamiento distinto. (b) La integración de
+  la API de pagos de Contabilidad: con pagos reales, el doble `APROBADA` deja de ser un mensaje repetido
+  y pasa a ser un doble pago. Esa integración debe llegar, como mínimo, con el rechazo de la transición a
+  un mismo estado y con una clave de idempotencia del pago.
+
+**4. Centralizar los topes que se solapan entre `ValidadorMontoMaximo` y las calculadoras.**
+- *Qué se observó:* con los valores del enunciado, el validador rechaza antes de que las calculadoras
+  puedan aplicar su tope, así que en el flujo real los topes de las calculadoras nunca actúan:
+
+  | Categoría | Tope del validador (monto solicitado) | Tope de la calculadora | ¿Alcanzable en el flujo? |
+  |---|---|---|---|
+  | VIAJE | 150 000 en total | 150 000 x días | Solo con `diasViaje = 0` (aprueba 0); con 1 día o más, nunca |
+  | REPRESENTACION | 2 000 000 | 2 000 000 mensual | No: son iguales |
+  | CAPACITACION | 3 000 000 | 3 000 000 anual sobre el 80 % | No: el 80 % de 3 000 000 es 2 400 000 |
+
+  Las pruebas unitarias de las calculadoras sí ejercitan sus topes (llamándolas directamente).
+- *Qué se consideró:* una única fuente de topes por categoría (un enum `TopesCategoria` o
+  `@ConfigurationProperties`) que usaran el validador y las calculadoras.
+- *Por qué se descartó:* los topes están en **dos** sitios, y el enunciado los define como conceptos
+  distintos (tope de la solicitud frente a tope diario, mensual o anual del reembolso). Unificarlos obliga
+  a decidir una semántica que Finanzas no ha dado, y tal como están, hoy no cambiaría ningún resultado.
+  Con dos usos, la Rule of Three no se cumple. No se modificaron.
+- *Señal para reconsiderar:* el **tercer consumidor** ya está anunciado. El validador de "límite anual
+  acumulado por empleado" de RF1 necesitará el tope anual de capacitación, y ahí se cumple la Rule of
+  Three. También sería señal que Finanzas cambie un tope y haya que editarlo en dos sitios, con riesgo de
+  que diverjan.
+
+**5. Bean Validation (`@Positive`, `@NotNull`) para rechazar montos menores o iguales a 0.**
+- *Qué se observó:* `ValidadorMontoMaximo` solo comprueba el límite superior. Un monto de -50 000 se
+  guarda con un monto aprobado de -50 000, y un monto de 0 se acepta (ver la salida del punto 3).
+- *Qué se consideró:* `spring-boot-starter-validation` con `@Positive` en `montoSolicitado` y `@Valid` en
+  el controlador.
+- *Por qué se descartó:* las anotaciones irían en `SolicitudReembolso` y meterían `jakarta.validation` en
+  el dominio, rompiendo la decisión de 0 imports de `jakarta` (la otra salida exige DTOs, ver punto 6).
+  Además, repartiría las reglas de negocio entre dos mecanismos (anotaciones y cadena), cuando RF1 ya
+  ofrece el punto de extensión correcto. Un monto positivo es una regla de negocio, no de forma del JSON,
+  y pertenece a la cadena: un `ValidadorMontoPositivo` es una clase nueva más una línea en
+  `CadenaValidadores`, sin tocar los demás eslabones.
+- *Estado del hueco:* **sigue abierto.** El enunciado fija exactamente tres verificaciones y no se agregó
+  una cuarta sin acordarlo. Queda identificado como el primer uso real del punto de extensión de RF1.
+- *Señal para reconsiderar Bean Validation:* la existencia de DTOs de entrada (punto 6) con varias reglas
+  de formato en la frontera HTTP (longitudes, patrones de `empleadoId`, fechas no futuras). Ahí sí son
+  restricciones de forma y las anotaciones viven fuera del dominio.
+
+**6. DTOs de entrada y salida con mappers, separados del dominio.**
+- *Qué se observó:* el controlador recibe y devuelve `SolicitudReembolso` directamente. El único problema
+  real que eso causó fue la asignación masiva: un `id` en el cuerpo del POST habría sobrescrito otra
+  solicitud. Se resolvió en el servicio ignorando `id`, `estado` y `montoAprobado` del cliente (tres
+  líneas, desviación documentada en la Parte 1).
+- *Qué se consideró:* `CrearSolicitudRequest` + `SolicitudResponse` + un mapper, y también una entidad
+  JPA separada con su mapper (descartada en la Parte 1 a favor de `orm.xml`).
+- *Por qué se descartó:* la API expone uno a uno los 9 campos, y el cliente necesita verlos todos. Dos
+  DTOs y un mapper copiarían 9 campos idénticos para resolver un problema ya resuelto con tres líneas: no
+  pasa el test de explicabilidad. La Regla 2 de ArchUnit ya garantiza que el adaptador REST solo depende
+  de `aplicacion` y `dominio`.
+- *Señal para reconsiderar:* que la entrada y la salida diverjan (por ejemplo, soportes como archivos y
+  no como un `boolean`), que el dominio gane campos internos que no deban salir (notas de auditoría),
+  versionado de la API, o un segundo cliente con otro contrato.
