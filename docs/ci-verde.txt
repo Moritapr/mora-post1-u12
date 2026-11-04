@@ -1,0 +1,29 @@
+$ gh run view 41787571573 --verbose
+
+✓ main Validacion Arquitectonica · 41787571573
+Triggered via push less than a minute ago
+
+JOBS
+✓ arquitectura in 28s (ID 126433128495)
+  ✓ Set up job
+  ✓ Run actions/checkout@v7
+  ✓ Configurar Java 17
+  ✓ Ejecutar reglas de arquitectura
+  ✓ Ejecutar suite completa de pruebas
+  ✓ Post Configurar Java 17
+  ✓ Post Run actions/checkout@v7
+  ✓ Complete job
+
+ANNOTATIONS
+- "The ubuntu-latest label will migrate to Ubuntu 26 beginning October 19, 2026. For more information, see https://github.com/actions/runner-images/issues/14748"
+arquitectura: .github#1
+
+
+For more information about the job, try: gh run view --job=126433128495
+View this run on GitHub: https://github.com/Moritapr/mora-post1-u12/actions/runs/41787571573
+
+$ gh run view 41787571573 --log | grep -E "Tests run: [0-9]+, Failures: [0-9]+, Errors: [0-9]+, Skipped: [0-9]+$|BUILD SUCCESS"
+arquitectura	Ejecutar reglas de arquitectura	2026-11-04T06:45:02.4072178Z [INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0
+arquitectura	Ejecutar reglas de arquitectura	2026-11-04T06:45:02.4101881Z [INFO] BUILD SUCCESS
+arquitectura	Ejecutar suite completa de pruebas	2026-11-04T06:45:13.6203115Z [INFO] Tests run: 60, Failures: 0, Errors: 0, Skipped: 0
+arquitectura	Ejecutar suite completa de pruebas	2026-11-04T06:45:14.2188065Z [INFO] BUILD SUCCESS

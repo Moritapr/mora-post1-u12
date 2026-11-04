@@ -1,0 +1,84 @@
+$ gh run view 41787406326 --log-failed
+# Commit affbe3e (test: violacion de arquitectura intencional) - run https://github.com/Moritapr/mora-post1-u12/actions/runs/41787406326
+
+arquitectura	Ejecutar reglas de arquitectura	﻿2026-11-04T06:43:22.9752125Z ##[group]Run mvn test -Dtest=ReglasArquitectura --no-transfer-progress
+arquitectura	Ejecutar reglas de arquitectura	2026-11-04T06:43:22.9752919Z ^[[36;1mmvn test -Dtest=ReglasArquitectura --no-transfer-progress^[[0m
+arquitectura	Ejecutar reglas de arquitectura	2026-11-04T06:43:22.9776820Z shell: /usr/bin/bash -e {0}
+arquitectura	Ejecutar reglas de arquitectura	2026-11-04T06:43:22.9777129Z env:
+arquitectura	Ejecutar reglas de arquitectura	2026-11-04T06:43:22.9777442Z   JAVA_HOME: /opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/17.0.21-9/x64
+arquitectura	Ejecutar reglas de arquitectura	2026-11-04T06:43:22.9777896Z   JAVA_HOME_17_X64: /opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/17.0.21-9/x64
+arquitectura	Ejecutar reglas de arquitectura	2026-11-04T06:43:22.9778272Z   MAVEN_ARGS: -ntp
+arquitectura	Ejecutar reglas de arquitectura	2026-11-04T06:43:22.9778495Z ##[endgroup]
+arquitectura	Ejecutar reglas de arquitectura	2026-11-04T06:43:25.8893595Z [INFO] Scanning for projects...
+arquitectura	Ejecutar reglas de arquitectura	2026-11-04T06:43:26.0487296Z [INFO] Loaded 24360 auto-discovered prefixes for remote repository central (prefixes-central.txt)
+arquitectura	Ejecutar reglas de arquitectura	2026-11-04T06:43:26.2646983Z [INFO] 
+arquitectura	Ejecutar reglas de arquitectura	2026-11-04T06:43:26.2648152Z [INFO] ------------------< com.empresa:reembolsos-integrado >------------------
+arquitectura	Ejecutar reglas de arquitectura	2026-11-04T06:43:26.2676013Z [INFO] Building reembolsos-integrado 0.0.1-SNAPSHOT
+arquitectura	Ejecutar reglas de arquitectura	2026-11-04T06:43:26.2696421Z [INFO]   from pom.xml
+arquitectura	Ejecutar reglas de arquitectura	2026-11-04T06:43:26.2697280Z [INFO] --------------------------------[ jar ]---------------------------------
+arquitectura	Ejecutar reglas de arquitectura	2026-11-04T06:43:26.2996599Z [INFO] Loaded 64 auto-discovered prefixes for remote repository apache.snapshots (prefixes-apache.snapshots.txt)
+arquitectura	Ejecutar reglas de arquitectura	2026-11-04T06:43:28.2480197Z [INFO] 
+arquitectura	Ejecutar reglas de arquitectura	2026-11-04T06:43:28.2529590Z [INFO] --- resources:3.3.1:resources (default-resources) @ reembolsos-integrado ---
+arquitectura	Ejecutar reglas de arquitectura	2026-11-04T06:43:28.3628162Z [INFO] Copying 1 resource from src/main/resources to target/classes
+arquitectura	Ejecutar reglas de arquitectura	2026-11-04T06:43:28.3727023Z [INFO] Copying 1 resource from src/main/resources to target/classes
+arquitectura	Ejecutar reglas de arquitectura	2026-11-04T06:43:28.3776147Z [INFO] 
+arquitectura	Ejecutar reglas de arquitectura	2026-11-04T06:43:28.3802162Z [INFO] --- compiler:3.14.1:compile (default-compile) @ reembolsos-integrado ---
+arquitectura	Ejecutar reglas de arquitectura	2026-11-04T06:43:28.5676782Z [INFO] Recompiling the module because of changed source code.
+arquitectura	Ejecutar reglas de arquitectura	2026-11-04T06:43:28.5730188Z [INFO] Compiling 25 source files with javac [debug parameters release 17] to target/classes
+arquitectura	Ejecutar reglas de arquitectura	2026-11-04T06:43:30.1177642Z [INFO] 
+arquitectura	Ejecutar reglas de arquitectura	2026-11-04T06:43:30.1178877Z [INFO] --- resources:3.3.1:testResources (default-testResources) @ reembolsos-integrado ---
+arquitectura	Ejecutar reglas de arquitectura	2026-11-04T06:43:30.1246153Z [INFO] skip non existing resourceDirectory /home/runner/work/mora-post1-u12/mora-post1-u12/src/test/resources
+arquitectura	Ejecutar reglas de arquitectura	2026-11-04T06:43:30.1247551Z [INFO] 
+arquitectura	Ejecutar reglas de arquitectura	2026-11-04T06:43:30.1252336Z [INFO] --- compiler:3.14.1:testCompile (default-testCompile) @ reembolsos-integrado ---
+arquitectura	Ejecutar reglas de arquitectura	2026-11-04T06:43:30.1360891Z [INFO] Recompiling the module because of changed dependency.
+arquitectura	Ejecutar reglas de arquitectura	2026-11-04T06:43:30.1386872Z [INFO] Compiling 14 source files with javac [debug parameters release 17] to target/test-classes
+arquitectura	Ejecutar reglas de arquitectura	2026-11-04T06:43:30.8029627Z [INFO] 
+arquitectura	Ejecutar reglas de arquitectura	2026-11-04T06:43:30.8036461Z [INFO] --- surefire:3.5.6:test (default-test) @ reembolsos-integrado ---
+arquitectura	Ejecutar reglas de arquitectura	2026-11-04T06:43:30.9116830Z [INFO] Using auto detected provider org.apache.maven.surefire.junitplatform.JUnitPlatformProvider
+arquitectura	Ejecutar reglas de arquitectura	2026-11-04T06:43:30.9756681Z [INFO] 
+arquitectura	Ejecutar reglas de arquitectura	2026-11-04T06:43:30.9776138Z [INFO] -------------------------------------------------------
+arquitectura	Ejecutar reglas de arquitectura	2026-11-04T06:43:30.9777030Z [INFO]  T E S T S
+arquitectura	Ejecutar reglas de arquitectura	2026-11-04T06:43:30.9778694Z [INFO] -------------------------------------------------------
+arquitectura	Ejecutar reglas de arquitectura	2026-11-04T06:43:31.7434816Z [INFO] Running com.empresa.reembolsos.ReglasArquitectura
+arquitectura	Ejecutar reglas de arquitectura	2026-11-04T06:43:31.7932722Z 06:43:31.745 [main] INFO com.tngtech.archunit.core.PluginLoader -- Detected Java version 17.0.21
+arquitectura	Ejecutar reglas de arquitectura	2026-11-04T06:43:32.8726890Z [ERROR] Tests run: 4, Failures: 1, Errors: 0, Skipped: 0, Time elapsed: 1.095 s <<< FAILURE! -- in com.empresa.reembolsos.ReglasArquitectura
+arquitectura	Ejecutar reglas de arquitectura	2026-11-04T06:43:32.8728406Z [ERROR] com.empresa.reembolsos.ReglasArquitectura.procesamientoSinPersistenciaNiWeb -- Time elapsed: 1.082 s <<< FAILURE!
+arquitectura	Ejecutar reglas de arquitectura	2026-11-04T06:43:32.8729446Z java.lang.AssertionError: 
+arquitectura	Ejecutar reglas de arquitectura	2026-11-04T06:43:32.8731029Z Architecture Violation [Priority: MEDIUM] - Rule 'no classes that reside in a package '..procesamiento..' should depend on classes that reside in any package ['..infraestructura..', '..adaptadores..', 'org.springframework.data..', 'jakarta.persistence..', 'org.springframework.web..', 'org.springframework.http..']' was violated (1 times):
+arquitectura	Ejecutar reglas de arquitectura	2026-11-04T06:43:32.8733784Z Field <com.empresa.reembolsos.procesamiento.validacion.ValidadorDuplicados.repositorio> has type <com.empresa.reembolsos.infraestructura.RepositorioSolicitudesJpa> in (ValidadorDuplicados.java:0)
+arquitectura	Ejecutar reglas de arquitectura	2026-11-04T06:43:32.8735215Z 	at com.tngtech.archunit.lang.ArchRule$Assertions.assertNoViolation(ArchRule.java:94)
+arquitectura	Ejecutar reglas de arquitectura	2026-11-04T06:43:32.8735919Z 	at com.tngtech.archunit.lang.ArchRule$Assertions.check(ArchRule.java:86)
+arquitectura	Ejecutar reglas de arquitectura	2026-11-04T06:43:32.8736602Z 	at com.tngtech.archunit.lang.ArchRule$Factory$SimpleArchRule.check(ArchRule.java:165)
+arquitectura	Ejecutar reglas de arquitectura	2026-11-04T06:43:32.8737410Z 	at com.tngtech.archunit.lang.syntax.ObjectsShouldInternal.check(ObjectsShouldInternal.java:81)
+arquitectura	Ejecutar reglas de arquitectura	2026-11-04T06:43:32.8738408Z 	at com.tngtech.archunit.junit.internal.ArchUnitTestDescriptor$ArchUnitRuleDescriptor.execute(ArchUnitTestDescriptor.java:166)
+arquitectura	Ejecutar reglas de arquitectura	2026-11-04T06:43:32.8739164Z 	at com.tngtech.archunit.junit.internal.ArchUnitTestDescriptor$ArchUnitRuleDescriptor.execute(ArchUnitTestDescriptor.java:149)
+arquitectura	Ejecutar reglas de arquitectura	2026-11-04T06:43:32.8739751Z 	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+arquitectura	Ejecutar reglas de arquitectura	2026-11-04T06:43:32.8740113Z 	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+arquitectura	Ejecutar reglas de arquitectura	2026-11-04T06:43:32.8740318Z 
+arquitectura	Ejecutar reglas de arquitectura	2026-11-04T06:43:32.8979693Z [INFO] 
+arquitectura	Ejecutar reglas de arquitectura	2026-11-04T06:43:32.8980070Z [INFO] Results:
+arquitectura	Ejecutar reglas de arquitectura	2026-11-04T06:43:32.8980266Z [INFO] 
+arquitectura	Ejecutar reglas de arquitectura	2026-11-04T06:43:32.8983000Z [ERROR] Failures: 
+arquitectura	Ejecutar reglas de arquitectura	2026-11-04T06:43:32.8988724Z [ERROR]   ReglasArquitectura.procesamientoSinPersistenciaNiWeb Architecture Violation [Priority: MEDIUM] - Rule 'no classes that reside in a package '..procesamiento..' should depend on classes that reside in any package ['..infraestructura..', '..adaptadores..', 'org.springframework.data..', 'jakarta.persistence..', 'org.springframework.web..', 'org.springframework.http..']' was violated (1 times):
+arquitectura	Ejecutar reglas de arquitectura	2026-11-04T06:43:32.8991545Z Field <com.empresa.reembolsos.procesamiento.validacion.ValidadorDuplicados.repositorio> has type <com.empresa.reembolsos.infraestructura.RepositorioSolicitudesJpa> in (ValidadorDuplicados.java:0)
+arquitectura	Ejecutar reglas de arquitectura	2026-11-04T06:43:32.8992798Z [INFO] 
+arquitectura	Ejecutar reglas de arquitectura	2026-11-04T06:43:32.8993137Z [ERROR] Tests run: 4, Failures: 1, Errors: 0, Skipped: 0
+arquitectura	Ejecutar reglas de arquitectura	2026-11-04T06:43:32.8993420Z [INFO] 
+arquitectura	Ejecutar reglas de arquitectura	2026-11-04T06:43:32.9022681Z [INFO] ------------------------------------------------------------------------
+arquitectura	Ejecutar reglas de arquitectura	2026-11-04T06:43:32.9023508Z [ERROR] BUILD FAILURE
+arquitectura	Ejecutar reglas de arquitectura	2026-11-04T06:43:32.9024135Z [INFO] ------------------------------------------------------------------------
+arquitectura	Ejecutar reglas de arquitectura	2026-11-04T06:43:32.9028430Z [INFO] Total time:  7.079 s
+arquitectura	Ejecutar reglas de arquitectura	2026-11-04T06:43:32.9029126Z [INFO] Finished at: 2026-11-04T06:43:32Z
+arquitectura	Ejecutar reglas de arquitectura	2026-11-04T06:43:32.9031475Z [INFO] ------------------------------------------------------------------------
+arquitectura	Ejecutar reglas de arquitectura	2026-11-04T06:43:32.9042850Z [ERROR] Failed to execute goal org.apache.maven.plugins:maven-surefire-plugin:3.5.6:test (default-test) on project reembolsos-integrado: There are test failures.
+arquitectura	Ejecutar reglas de arquitectura	2026-11-04T06:43:32.9046598Z [ERROR] 
+arquitectura	Ejecutar reglas de arquitectura	2026-11-04T06:43:32.9047547Z [ERROR] See /home/runner/work/mora-post1-u12/mora-post1-u12/target/surefire-reports for the individual test results.
+arquitectura	Ejecutar reglas de arquitectura	2026-11-04T06:43:32.9048974Z [ERROR] See dump files (if any exist) [date].dump, [date]-jvmRun[N].dump and [date].dumpstream.
+arquitectura	Ejecutar reglas de arquitectura	2026-11-04T06:43:32.9068730Z [ERROR] -> [Help 1]
+arquitectura	Ejecutar reglas de arquitectura	2026-11-04T06:43:32.9069133Z [ERROR] 
+arquitectura	Ejecutar reglas de arquitectura	2026-11-04T06:43:32.9069601Z [ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+arquitectura	Ejecutar reglas de arquitectura	2026-11-04T06:43:32.9070177Z [ERROR] Re-run Maven using the -X switch to enable full debug logging.
+arquitectura	Ejecutar reglas de arquitectura	2026-11-04T06:43:32.9070598Z [ERROR] 
+arquitectura	Ejecutar reglas de arquitectura	2026-11-04T06:43:32.9071101Z [ERROR] For more information about the errors and possible solutions, please read the following articles:
+arquitectura	Ejecutar reglas de arquitectura	2026-11-04T06:43:32.9071778Z [ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException
+arquitectura	Ejecutar reglas de arquitectura	2026-11-04T06:43:32.9368353Z ##[error]Process completed with exit code 1.

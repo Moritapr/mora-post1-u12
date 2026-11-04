@@ -517,3 +517,17 @@ es la decisión vigente hoy y lleva la señal que haría reconsiderarlo.
 - *Señal para reconsiderar:* que la entrada y la salida diverjan (por ejemplo, soportes como archivos y
   no como un `boolean`), que el dominio gane campos internos que no deban salir (notas de auditoría),
   versionado de la API, o un segundo cliente con otro contrato.
+
+### Evidencia del pipeline (violación intencional de la Regla 1)
+
+| Commit | Qué hace | Run de GitHub Actions | Resultado | Evidencia |
+|---|---|---|---|---|
+| `affbe3e` | `test: violacion de arquitectura intencional`: campo privado `RepositorioSolicitudesJpa` en `ValidadorDuplicados` | [41787406326](https://github.com/Moritapr/mora-post1-u12/actions/runs/41787406326) | Falla en "Ejecutar reglas de arquitectura" | [`docs/ci-fallo.txt`](docs/ci-fallo.txt) |
+| `8f499f9` | `git revert` de la violación, sin reescribir historia | [41787571573](https://github.com/Moritapr/mora-post1-u12/actions/runs/41787571573) | Verde: 4 reglas y 60 pruebas | [`docs/ci-verde.txt`](docs/ci-verde.txt) |
+
+Se usó un **campo** y no un import suelto porque un import sin uso no queda en el bytecode y ArchUnit no
+lo vería. Línea clave del fallo:
+
+```
+Field <com.empresa.reembolsos.procesamiento.validacion.ValidadorDuplicados.repositorio> has type <com.empresa.reembolsos.infraestructura.RepositorioSolicitudesJpa> in (ValidadorDuplicados.java:0)
+```
