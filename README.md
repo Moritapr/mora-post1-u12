@@ -114,7 +114,7 @@ src/main/java/com/empresa/reembolsos/dominio/SolicitudReembolso.java:4:import ja
 |---|---|---|---|
 | RF1 | Chain of Responsibility | `validacion/ValidadorSolicitud` (eslabón base), `ValidadorDocumentosSoporte`, `ValidadorMontoMaximo`, `ValidadorDuplicados`, `CadenaValidadores`, `ResultadoValidacion` | Nueva subclase de `ValidadorSolicitud` + enlazarla en `CadenaValidadores` (los eslabones existentes no cambian) |
 | RF2 | Strategy | `calculo/CalculadoraReembolso` (estrategia), `CalculadoraViaje`, `CalculadoraRepresentacion`, `CalculadoraCapacitacion`, `SelectorCalculadora` | Nueva clase `@Component` que implementa `CalculadoraReembolso` |
-| RF3 | Observer | `notificacion/ObservadorCambioEstado` (observador), `NotificadorEmpleado`, `NotificadorContabilidad`, `NotificadorAuditoria` | Nueva clase `@Component` que implementa `ObservadorCambioEstado` |
+| RF3 | Observer | `notificacion/ObservadorCambioEstado` (observador), `NotificadorAuditoria` (`@Order(1)`), `NotificadorEmpleado` (`@Order(2)`), `NotificadorContabilidad` (`@Order(3)`) | Nueva clase `@Component` que implementa `ObservadorCambioEstado` y declara su `@Order` |
 
 `aplicacion/SolicitudReembolsoService` es el único que coordina los tres patrones y el único que conoce
 `infraestructura/RepositorioSolicitudesJpa`. `adaptadores/rest/SolicitudReembolsoController` solo habla
@@ -180,13 +180,14 @@ categoría, que es exactamente el cambio que RF2 anticipa.
 | `crear` exige `empleadoId`, `categoria`, `montoSolicitado` y `fechaGasto` | Sin ellos los validadores lanzarían `NullPointerException` (500). Es una precondición de entrada, no una regla de negocio, por eso no es un eslabón de la cadena. |
 | `crear` ignora `id`, `estado` y `montoAprobado` enviados por el cliente | Un `id` en el cuerpo del POST haría que `save` sobrescribiera otra solicitud. |
 | `SelectorCalculadora` valida al arrancar que toda categoría tenga calculadora | Decisión de diseño 2. |
+| Orden fijo de observadores con `@Order`: Auditoría -> Empleado -> Contabilidad | Sin `@Order`, la ejecución manual mostró Auditoría -> Contabilidad -> Empleado, un orden accidental del registro de beans. Como `forEach` se detiene en la primera excepción, RF3 ("auditoría registra todo cambio, sin excepción") dependía de esa casualidad. Auditoría va primero para que ningún fallo posterior la impida, y Contabilidad al final porque es la que integrará la API externa de pagos. El aislamiento de fallos por observador **no** se implementa (ver ADR-001, Parte 2). |
 
 ### Pruebas
 
 `mvn clean test`:
 
 ```
-[INFO] Tests run: 55, Failures: 0, Errors: 0, Skipped: 0
+[INFO] Tests run: 56, Failures: 0, Errors: 0, Skipped: 0
 [INFO] BUILD SUCCESS
 ```
 
@@ -202,7 +203,7 @@ categoría, que es exactamente el cambio que RF2 anticipa.
 | `SelectorCalculadoraTest` | Unitaria | 4 | Selección por categoría; categoría sin calculadora o duplicada falla al construir; categoría nula |
 | `NotificadoresTest` | Unitaria | 9 | Empleado; Contabilidad solo en APROBADA (y no en los otros 3 estados); Auditoría en los 4 estados |
 | `SolicitudReembolsoServiceTest` | Unitaria (Mockito) | 6 | Crear válida / rechazada / duplicada / sin datos; cambiar estado notifica; 404 sin notificar |
-| `FlujoSolicitudesIntegracionTest` | Integración `@SpringBootTest` + MockMvc + H2 | 9 | POST de las 3 categorías con su monto aprobado; 400 sin soportes, por duplicado y por categoría inexistente; PUT APROBADA y RECHAZADA con los 3 observadores como espías (`@MockitoSpyBean`) y Contabilidad actuando solo en APROBADA; PUT 404 |
+| `FlujoSolicitudesIntegracionTest` | Integración `@SpringBootTest` + MockMvc + H2 | 10 | POST de las 3 categorías con su monto aprobado; 400 sin soportes, por duplicado y por categoría inexistente; PUT APROBADA y RECHAZADA con los 3 observadores como espías (`@MockitoSpyBean`) y Contabilidad actuando solo en APROBADA; orden de notificación Auditoría -> Empleado -> Contabilidad (`InOrder` y orden en consola); PUT 404 |
 | `ReembolsosApplicationTests` | Contexto | 1 | El contexto arranca |
 
 ### Evidencia de ejecución manual
@@ -234,7 +235,8 @@ $ curl -s -w ' HTTP %{http_code}' -X PUT localhost:8080/api/solicitudes/99/estad
 ```
 
 Consola de la aplicación durante los dos PUT (los tres observadores reaccionan; Contabilidad solo en
-APROBADA):
+APROBADA). Esta salida es anterior a `@Order` y muestra el orden accidental Auditoría -> Contabilidad ->
+Empleado que motivó fijarlo:
 
 ```
 2026-11-04T01:26:12.662-05:00  INFO 64875 --- [reembolsos-integrado] [nio-8080-exec-9] c.e.r.p.n.NotificadorAuditoria           : Auditoria: solicitud 3 cambio de PENDIENTE a APROBADA
@@ -292,3 +294,4 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 | `90c2677` feat | Servicio, repositorio, controlador, excepciones y advice |
 | `e60caf1` test | Pruebas del servicio y de integración del flujo completo |
 | `898eedb` refactor | Selector valida al arrancar que toda categoría tenga calculadora |
+| `a03ac7b` docs | Decisiones 1 y 2, desviaciones, pruebas y evidencia |

@@ -10,6 +10,10 @@ import com.empresa.reembolsos.dominio.SolicitudReembolso;
  * {@code @Component} sin conocerlas; cada una decide si reacciona y como (por ejemplo,
  * Contabilidad solo ante APROBADA). Un interesado nuevo, como el panel de metricas, es
  * otra implementacion y no requiere cambiar el servicio ni a los demas observadores.</p>
+ *
+ * <p>El orden de notificacion se fija con {@code @Order} en cada implementacion (Spring ordena
+ * asi la {@code List} que inyecta en el servicio): auditoria primero, Contabilidad al final. Un
+ * observador nuevo debe declarar su {@code @Order}; sin el, Spring lo pone al final.</p>
  */
 public interface ObservadorCambioEstado {
 

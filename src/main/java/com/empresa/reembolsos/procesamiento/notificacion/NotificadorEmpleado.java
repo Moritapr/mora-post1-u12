@@ -2,12 +2,16 @@ package com.empresa.reembolsos.procesamiento.notificacion;
 
 import com.empresa.reembolsos.dominio.EstadoSolicitud;
 import com.empresa.reembolsos.dominio.SolicitudReembolso;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 /**
  * Informa al empleado el resultado de cualquier cambio de estado de su solicitud.
+ *
+ * <p>Va segundo ({@code @Order(2)}), despues de auditoria y antes de Contabilidad.</p>
  */
 @Component
+@Order(2)
 public class NotificadorEmpleado implements ObservadorCambioEstado {
     @Override
     public void onCambioEstado(SolicitudReembolso solicitud, EstadoSolicitud estadoAnterior) {

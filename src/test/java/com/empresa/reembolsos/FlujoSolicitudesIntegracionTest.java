@@ -3,6 +3,7 @@ package com.empresa.reembolsos;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -153,6 +154,26 @@ class FlujoSolicitudesIntegracionTest {
             .contains("Notificando a E-600: su solicitud paso de PENDIENTE a RECHAZADA")
             .contains("Auditoria: solicitud " + creada.getId() + " cambio de PENDIENTE a RECHAZADA")
             .doesNotContain("Contabilidad:");
+    }
+
+    @Test
+    void put_notificaPrimeroAAuditoriaLuegoAlEmpleadoYAlFinalAContabilidad(CapturedOutput salida) throws Exception {
+        var creada = crear(json("E-700", "REPRESENTACION", "300000", 0, true));
+
+        mockMvc.perform(put("/api/solicitudes/{id}/estado", creada.getId())
+                .contentType(MediaType.APPLICATION_JSON).content("\"APROBADA\""))
+            .andExpect(status().isOk());
+
+        var orden = inOrder(notificadorAuditoria, notificadorEmpleado, notificadorContabilidad);
+        orden.verify(notificadorAuditoria).onCambioEstado(any(), eq(EstadoSolicitud.PENDIENTE));
+        orden.verify(notificadorEmpleado).onCambioEstado(any(), eq(EstadoSolicitud.PENDIENTE));
+        orden.verify(notificadorContabilidad).onCambioEstado(any(), eq(EstadoSolicitud.PENDIENTE));
+        var consola = salida.getAll();
+        assertThat(consola.indexOf("Auditoria: solicitud " + creada.getId()))
+            .isNotNegative()
+            .isLessThan(consola.indexOf("Notificando a E-700"));
+        assertThat(consola.indexOf("Notificando a E-700"))
+            .isLessThan(consola.indexOf("Contabilidad: programar pago de 300000"));
     }
 
     @Test
