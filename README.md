@@ -357,6 +357,13 @@ La decisión arquitectónica está en [`docs/adr/ADR-001.md`](docs/adr/ADR-001.m
    `org.springframework.http..`, coherente con ADR-001 (el cliente de la API de Contabilidad vivirá en
    `infraestructura`).
 
+5. **Surefire no ejecutaba las reglas en la suite completa.** `ReglasArquitectura` no sigue los patrones
+   por defecto de Surefire (`*Test`, `*Tests`, `Test*`, `*TestCase`). Solo corría con
+   `-Dtest=ReglasArquitectura`: `mvn clean verify` informaba 56 pruebas y 0 ejecuciones de
+   `ReglasArquitectura`. Se agrega un `<include>` explícito en `maven-surefire-plugin` y, desde
+   entonces, `mvn clean verify` ejecuta 60 pruebas (56 + 4 reglas), sin renombrar la clase que pide el
+   enunciado.
+
 Resultado final:
 
 ```
