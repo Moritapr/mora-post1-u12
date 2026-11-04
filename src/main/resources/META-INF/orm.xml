@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Mapeo JPA de las clases de dominio. Se declara aqui (y no con @Entity) para que
+     el paquete dominio no importe jakarta.persistence. -->
+<entity-mappings xmlns="https://jakarta.ee/xml/ns/persistence/orm"
+                 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                 xsi:schemaLocation="https://jakarta.ee/xml/ns/persistence/orm https://jakarta.ee/xml/ns/persistence/orm/orm_3_1.xsd"
+                 version="3.1">
+
+    <entity class="com.empresa.reembolsos.dominio.SolicitudReembolso" access="FIELD">
+        <table name="solicitud_reembolso"/>
+        <attributes>
+            <id name="id">
+                <generated-value strategy="IDENTITY"/>
+            </id>
+            <basic name="empleadoId">
+                <column name="empleado_id" nullable="false"/>
+            </basic>
+            <basic name="categoria">
+                <column name="categoria" nullable="false"/>
+                <enumerated>STRING</enumerated>
+            </basic>
+            <basic name="montoSolicitado">
+                <column name="monto_solicitado" nullable="false" precision="15" scale="2"/>
+            </basic>
+            <basic name="montoAprobado">
+                <column name="monto_aprobado" precision="15" scale="2"/>
+            </basic>
+            <basic name="fechaGasto">
+                <column name="fecha_gasto" nullable="false"/>
+            </basic>
+            <basic name="diasViaje">
+                <column name="dias_viaje"/>
+            </basic>
+            <basic name="documentosSoporte">
+                <column name="documentos_soporte"/>
+            </basic>
+            <basic name="estado">
+                <column name="estado" nullable="false"/>
+                <enumerated>STRING</enumerated>
+            </basic>
+        </attributes>
+    </entity>
+</entity-mappings>
