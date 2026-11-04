@@ -859,7 +859,7 @@ objeto en memoria y el PUT lo relee de la base, cuya columna es `numeric(15,2)`;
 
 ## 8. Historial de commits
 
-Salida de `git log --reverse --format="%h|%s"` (Parte 1: 9 commits; Parte 2: 10, contando este):
+Salida de `git log --reverse --format="%h|%s"` (Parte 1: 9 commits; Parte 2: 11 hasta `7d38b05`; cualquier commit posterior solo actualiza esta tabla, y la fuente de verdad es `git log`):
 
 | # | Commit | Parte | Mensaje |
 |---|---|---|---|
@@ -881,6 +881,7 @@ Salida de `git log --reverse --format="%h|%s"` (Parte 1: 9 commits; Parte 2: 10,
 | 16 | `affbe3e` | 2 | test: violacion de arquitectura intencional |
 | 17 | `8f499f9` | 2 | Revert "test: violacion de arquitectura intencional" |
 | 18 | `2c158e0` | 2 | docs: guardar evidencia del pipeline en rojo por la violacion y en verde tras revertirla |
-| 19 | (este commit) | 2 | docs: consolidar README con diseno propuesto, decisiones, ADR y analisis de impacto |
+| 19 | `2f976f7` | 2 | docs: consolidar README con diseno propuesto, decisiones, ADR y analisis de impacto |
+| 20 | `7d38b05` | 2 | docs: anotar en el Diseno Propuesto que el orden de los observadores se fijo despues |
 
 `affbe3e` es el único commit con pruebas en rojo, y lo es a propósito (sección 6). El commit de Diseño Propuesto (`82fba1d`) es el primero del historial: anterior a cualquier código de patrones.
